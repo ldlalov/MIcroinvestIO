@@ -26,23 +26,27 @@ namespace MIcroinvestIO.Controllers
         private readonly IHttpContextAccessor httpContextAccessor;
         private ICashBookService cashBookService;
         private readonly IConfiguration _configuration;
+        private readonly IServiceProvider _serviceProvider;//?
+        private readonly Database _dbSettings;
 
         private List<CashBook> records;
-        public HomeController(ILogger<HomeController> logger, IHttpContextAccessor _httpContextAccessor, MultiContext context, ICashBookService _cashBookService, IConfiguration configuration)
+        public HomeController(ILogger<HomeController> logger, IHttpContextAccessor _httpContextAccessor, MultiContext context, ICashBookService _cashBookService, IConfiguration configuration, IServiceProvider serviceProvider, Database dbSettings)
         {
             _logger = logger;
             httpContextAccessor = _httpContextAccessor;
             _context = context;
             cashBookService = _cashBookService;
             _configuration = configuration;
+            _serviceProvider = serviceProvider;
+            _dbSettings = dbSettings;
         }
 
         public IActionResult Index()
         {
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            var connectionString = _configuration.GetConnectionString("DefaultConnection").Split(';');
 
             // Pass it to the view using ViewBag
-            ViewBag.ConnectionString = connectionString;
+            ViewBag.ConnectionString = $"Server: {connectionString[0]}, Database: {connectionString[1]}";
             return View();
         }
 
@@ -58,17 +62,23 @@ namespace MIcroinvestIO.Controllers
         public async Task<IActionResult> Database(Database dbData)
         {
             string connectionString = $"    \"DefaultConnection\": \"Server={dbData.Ip};Database={dbData.DatabaseName};user={dbData.User};password={dbData.Password};encrypt=false;\"";
-            var filePath = Path.Combine(AppContext.BaseDirectory, "../../../appsettings.json");/// !!!Change it in final project to work!!!
+            var filePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");/// !!!Change it in final project to work!!!
             List<string> json = System.IO.File.ReadAllLines(filePath).ToList();
             json.RemoveAt(2);
             json.Insert(2, connectionString);
             System.IO.File.Delete(filePath);
-            System.IO.File.AppendAllLines(filePath,json);
+            System.IO.File.AppendAllLines(filePath, json);
             string conString = $"server={dbData.Ip};Database={dbData.DatabaseName};User Id={dbData.User};Password={dbData.Password};encrypt=false;";
 
+            //Update
+            _dbSettings.Ip = dbData.Ip;
+            _dbSettings.DatabaseName = dbData.DatabaseName;
+            _dbSettings.User = dbData.User;
+            _dbSettings.Password = dbData.Password;
+            string newConnectionString = dbData.ConnectionString;
             try
             {
-                using (SqlConnection con = new SqlConnection(conString))
+                using (SqlConnection con = new SqlConnection(newConnectionString))
                 {
 
                     con.Open();

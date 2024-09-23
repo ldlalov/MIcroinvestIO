@@ -18,6 +18,14 @@ namespace MIcroinvestIO.Models
         public string User {  get; set; }
         public string Password { get; set; }
         public string Success { get; set; }
+        public string ConnectionString
+        {
+            get
+            {
+                return $"Server={Ip};Database={DatabaseName};User Id={User};Password={Password};encrypt=false;";
+            }
+        }
 
     }
+
 }

@@ -6,6 +6,7 @@ using MIcroinvestIO.Micro;
 using MIcroinvestIO.Services.Interfaces;
 using MIcroinvestIO.Services;
 using Microsoft.Extensions.Hosting.WindowsServices;
+using MIcroinvestIO.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,15 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<MultiContext>(options =>
-    options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<MultiContext>(options =>
+//    options.UseSqlServer(connectionString));
+builder.Services.AddSingleton<Database>();
+builder.Services.AddDbContext<MultiContext>((serviceProvider, options) =>
+{
+    var dbSettings = serviceProvider.GetRequiredService<Database>();
+    options.UseSqlServer(dbSettings.ConnectionString);
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
