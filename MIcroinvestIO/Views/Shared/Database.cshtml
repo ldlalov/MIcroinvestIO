@@ -24,7 +24,14 @@
     </div>
     <br />
     <div class="form-group">
-        <p class="alert-success">@Model.Success</p>
+        @if (Model.Success == "Success!")
+        {
+            <p class="alert-success">@Model.Success</p>
+        }
+        else
+        {
+            <p class="alert-danger">@Model.Success</p>
+        }
     </div>
     <br />
     <button type="submit" class="btn btn-secondary">Update</button>

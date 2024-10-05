@@ -46,7 +46,7 @@ namespace MIcroinvestIO.Controllers
             var connectionString = _configuration.GetConnectionString("DefaultConnection").Split(';');
 
             // Pass it to the view using ViewBag
-            ViewBag.ConnectionString = $"Server: {connectionString[0]}, Database: {connectionString[1]}";
+            ViewBag.ConnectionString = $"{connectionString[0]}, {connectionString[1]}";
             return View();
         }
 
@@ -83,12 +83,11 @@ namespace MIcroinvestIO.Controllers
 
                     con.Open();
                     dbData.Success = "Success!";
-                    con.Close();
                 }
             }
             catch (Exception)
             {
-                throw;
+                dbData.Success = "Fail!";
             }
             return View(dbData);
         }
@@ -113,14 +112,14 @@ namespace MIcroinvestIO.Controllers
             try
             {
                 records = await cashBookService.FiltheredRecords(startDate, endDate);
-                var objects = _context.Objects.ToList();// Not good but I will fix it
+                var objects = _context.Objects.ToList();// Not good but I will fix it someday
 
                 foreach (var record in records) 
                 {
                     result.Add(new CashBookViewModel
                     {
                         CashBook = record,
-                        Object = objects.FirstOrDefault(objects => objects.Id == record.ObjectId).Name
+                        Object = objects.FirstOrDefault(objects => objects.Id == record.ObjectId).Name//Get the name of the city from Objects table
                     });
                     
                 }
@@ -136,6 +135,31 @@ namespace MIcroinvestIO.Controllers
             }
             return View(result);
         }
+        public IActionResult Payments() { return View(); }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Payments(DateTime? startDate, DateTime? endDate)
+        {
+            ViewBag.StartDate = startDate;
+            ViewBag.EndDate = endDate;
+            var payments = _context.Payments.Where(payment => payment.Date >= startDate && payment.Date <= endDate && payment.OperType == 2 && payment.Mode == 1).ToList();
+            var result = new List<PaymentsViewModel>();
+            foreach (var payment in payments)
+            {
+                result.Add(new PaymentsViewModel
+                {
+                    DateTime = payment.Date,
+                    Qtty = payment.Qtty,
+                    Partner = _context.Partners.First(p => p.Id == payment.PartnerId),
+                    Payment = payment,
+                    OperationType = _context.OperationTypes.First(o => o.Id == payment.OperType),
+                    Object = _context.Objects.First(o => o.Id == payment.ObjectId)
+                });
+            }
+            return View(result);
+        }
+
         public IActionResult Privacy()
         {
             return View();
