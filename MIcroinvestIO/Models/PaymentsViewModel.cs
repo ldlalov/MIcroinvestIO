@@ -4,6 +4,7 @@ namespace MIcroinvestIO.Models
 {
     public class PaymentsViewModel
     {
+        public int? Acct { get; set; }
         public DateTime? DateTime { get; set; }
         public Double? Qtty { get; set; }
         public int PaymentId { get; set; }

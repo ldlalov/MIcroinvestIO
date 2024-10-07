@@ -28,9 +28,10 @@ namespace MIcroinvestIO.Controllers
         private readonly IConfiguration _configuration;
         private readonly IServiceProvider _serviceProvider;//?
         private readonly Database _dbSettings;
-
+        public IPaymentService paymentService;
+        private List<Payment> payments;
         private List<CashBook> records;
-        public HomeController(ILogger<HomeController> logger, IHttpContextAccessor _httpContextAccessor, MultiContext context, ICashBookService _cashBookService, IConfiguration configuration, IServiceProvider serviceProvider, Database dbSettings)
+        public HomeController(ILogger<HomeController> logger, IHttpContextAccessor _httpContextAccessor, MultiContext context, ICashBookService _cashBookService, IConfiguration configuration, IServiceProvider serviceProvider, Database dbSettings, IPaymentService _paymentService)
         {
             _logger = logger;
             httpContextAccessor = _httpContextAccessor;
@@ -39,6 +40,7 @@ namespace MIcroinvestIO.Controllers
             _configuration = configuration;
             _serviceProvider = serviceProvider;
             _dbSettings = dbSettings;
+            paymentService = _paymentService;
         }
 
         public IActionResult Index()
@@ -135,20 +137,35 @@ namespace MIcroinvestIO.Controllers
             }
             return View(result);
         }
-        public IActionResult Payments() { return View(); }
+        public IActionResult Payments() 
+        {
+            ViewBag.Paystatus = "Платени";
+            return View();
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Payments(DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> Payments(DateTime? startDate, DateTime? endDate, string paystatus)
         {
             ViewBag.StartDate = startDate;
             ViewBag.EndDate = endDate;
-            var payments = _context.Payments.Where(payment => payment.Date >= startDate && payment.Date <= endDate && payment.OperType == 2 && payment.Mode == 1).ToList();
+            ViewBag.Paystatus = paystatus;
+            if (paystatus == "Платени")
+            {
+                payments = await paymentService.Paid();
+            }
+            else
+            {
+                payments = await paymentService.Unpaid();
+
+            }
+            payments = payments.Where(p => p.Date >= startDate && p.Date <= endDate).ToList();
             var result = new List<PaymentsViewModel>();
             foreach (var payment in payments)
             {
                 result.Add(new PaymentsViewModel
                 {
+                    Acct = payment.Acct,
                     DateTime = payment.Date,
                     Qtty = payment.Qtty,
                     Partner = _context.Partners.First(p => p.Id == payment.PartnerId),

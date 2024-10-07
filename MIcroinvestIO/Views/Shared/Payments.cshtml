@@ -15,14 +15,27 @@
         <input type="date" name="endDate" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" />
     </div>
     <br />
+        <label>Платени/Неплатени: </label>
+        <div class="dropdown show">
+            <a class="btn btn-secondary dropdown-toggle btn-danger" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @ViewBag.Paystatus
+            </a>
+            <input type="hidden" id="paystatus" name="paystatus" value="@ViewBag.Paystatus" />
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" id="paidUnpaid">
+                <a class="dropdown-item text-danger" href="#">Платени</a>
+                <a class="dropdown-item text-danger" href="#">Неплатени</a>
+            </div>
+        </div>
+
+    <br />
     <button type="submit" class="text-danger" style="background-color:darkred;block-size:100px;writing-mode:vertical-lr">
         <i class="bi bi-binoculars"></i>
     </button>
     <br />
-
     <table class="table table-striped">
         <thead>
             <tr>
+                <td>Документ номер</td>
                 <td>Дата</td>
                 <td>Партньор</td>
                 <td>Обект</td>
@@ -36,13 +49,22 @@
                 @foreach (var item in Model)
                 {
                     <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Acct)</td>
                         <td>@Html.DisplayFor(modelItem => item.DateTime)</td>
                         <td>@Html.DisplayFor(modelItem => item.Partner.Company)</td>
                         <td>@Html.DisplayFor(modelItem => item.Object.Name)</td>
                         <td>@Html.DisplayFor(modelItem => item.OperationType.Bg)</td>
                         <td>@($"{item.Qtty:f2}")</td>
                     </tr>
+                    
                 }
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
             }
         </tbody>
     </table>
@@ -51,11 +73,11 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#cityDropdown a.dropdown-item').click(function (e) {
+        $('#paidUnpaid a.dropdown-item').click(function (e) {
             e.preventDefault();
-            var selectedCity = $(this).text(); // Get the selected city text
-            $('#dropdownMenuLink').text(selectedCity); // Update dropdown display text
-            $('#selectedCityInput').val(selectedCity); // Set the selected city value to the hidden input
+            var paystatus = $(this).text(); // Get the selected city text
+            $('#dropdownMenuLink').text(paystatus); // Update dropdown display text
+            $('#paystatus').val(paystatus); // Set the selected city value to the hidden input
         });
     });
 </script>

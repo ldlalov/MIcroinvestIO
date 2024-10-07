@@ -1,5 +1,4 @@
 ﻿using MIcroinvestIO.Micro;
-using MIcroinvestIO.Models;
 
 namespace MIcroinvestIO.Services.Interfaces
 {
