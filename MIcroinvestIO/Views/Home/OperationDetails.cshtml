@@ -1,0 +1,41 @@
+﻿@model OperationDetailsViewModel
+
+<form>
+    <a>Документ номер: @Model.Acct</a>
+    <table class="table-bordered" style="text-align: center">
+        <thead>
+            <tr>
+            <td>
+                Good
+            </td>
+            <td>
+                Price In
+            </td>
+            <td>
+                Price Out
+            </td>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Acct != 0)
+            {
+                @foreach (var goo in Model.goods)
+                {
+                    <tr>
+                        <td>
+                            @goo.Name
+                        </td>
+                        <td>
+                            @($"{goo.PriceIn:f2}")
+                        </td>
+                        <td>
+                            @($"{goo.PriceOut1:f2}")
+                        </td>
+                    </tr>
+
+                }
+
+            }
+        </tbody>
+    </table>
+</form>

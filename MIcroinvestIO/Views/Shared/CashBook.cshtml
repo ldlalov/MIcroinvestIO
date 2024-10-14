@@ -1,0 +1,126 @@
+﻿@model IEnumerable<CashBookViewModel>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+<!-- Add an id to the form -->
+<form id="cashBookForm" method="post" asp-controller="Home" asp-action="CashBook">
+    @Html.AntiForgeryToken() 
+    <div>
+        <label>От дата</label>
+        <input type="date" name="startDate" value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <br />
+    <div>
+        <label>До дата</label>
+        <input type="date" name="endDate" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <br />
+    <div>
+        <label>Обект</label>
+        <div class="dropdown show">
+            <a class="btn btn-secondary dropdown-toggle btn-danger" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @ViewBag.City
+            </a>
+            <input type="hidden" id="selectedCityInput" name="city" value="@ViewBag.City" />
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" id="cityDropdown">
+                <a class="dropdown-item text-danger" href="#">Всички</a>
+                <a class="dropdown-item text-danger" href="#">Бургас</a>
+                <a class="dropdown-item text-danger" href="#">Приморско</a>
+                <a class="dropdown-item text-danger" href="#">Созопол</a>
+                <a class="dropdown-item text-danger" href="#">Средец</a>
+            </div>
+        </div>
+    </div>
+    <br />
+    <button type="submit" class="text-danger" style="background-color:darkred;block-size:100px;writing-mode:vertical-lr">
+        <i class="bi bi-binoculars"></i>
+    </button>
+    <br />
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <td>Дата</td>
+                <td>Описание</td>
+                <td>Сума</td>
+                <td>Офис</td>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.CashBook.Date)</td>
+                        <td class="openDetailsModal">
+                            @Html.ActionLink(
+                                     linkText: item.CashBook.Desc,
+                                     actionName: "OperationDetails",
+                                     controllerName: "Home",
+                                     routeValues: new { desc = item.CashBook.Desc }, // Pass the item ID or identifier
+                                     htmlAttributes: new { @class = "details-link", data_desc = item.CashBook.Desc }
+                                     )
+                        </td>
+                        <td>@($"{item.CashBook.Profit:f2}")</td>
+                        <td>@Html.DisplayFor(modelItem => item.Object)</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</form>
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Operation Details</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- This is where dynamic content will be loaded -->
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.details-link').forEach(function (element) {
+            element.addEventListener('click', function (e) {
+                e.preventDefault(); // Prevent the default link behavior
+
+                var desc = encodeURIComponent(this.dataset.desc); // Get and encode the description to handle special characters
+                var url = '/Home/OperationDetails?desc=' + desc; // Manually construct the URL
+
+                // Fetch content using AJAX
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('modalContent').innerHTML = html; // Insert content
+
+                        // Initialize the Bootstrap modal and show it
+                        var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                        modal.show();
+                    });
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#cityDropdown a.dropdown-item').click(function (e) {
+            e.preventDefault();
+            var selectedCity = $(this).text(); // Get the selected city text
+            $('#dropdownMenuLink').text(selectedCity); // Update dropdown display text
+            $('#selectedCityInput').val(selectedCity); // Set the selected city value to the hidden input
+        }); 
+    });
+</script>
